@@ -1,0 +1,22 @@
+FROM balenalib/raspberry-pi-debian:jessie
+
+## install deps
+RUN apt-get update && \
+    apt-get install -y wget && \
+    rm -rf /var/lib/apt/lists/*
+
+## install php
+RUN echo 'deb http://repozytorium.mati75.eu/raspbian jessie-backports main contrib non-free' >> /etc/apt/sources.list && \
+    echo 'deb-src http://repozytorium.mati75.eu/raspbian jessie-backports main contrib non-free' >> /etc/apt/sources.list && \
+    gpg --keyserver pgpkeys.mit.edu --recv-key CCD91D6111A06851 && \
+    gpg --armor --export CCD91D6111A06851 | apt-key add - && \
+    apt-get update && \
+    apt-get install -y imagemagick php-imagick php7.3-fpm php7.3-mysql && \
+    rm -rf /var/lib/apt/lists/*
+
+## configure php
+RUN sed -i 's/^listen = .*/listen = 9000/g' /etc/php/7.3/fpm/pool.d/www.conf
+
+EXPOSE 9000
+
+CMD service php7.3-fpm start && php-fpm7.3 --force-stderr --nodaemonize --fpm-config /etc/php/7.3/fpm/php-fpm.conf
